@@ -1,1 +1,3 @@
-export type LayerName = 'GeoJsonLayer';
+export type LayerName = 'GeoJsonLayer' | 'ClusteredGeoJsonLayer';
+
+export type Metadata = { [key: string]: unknown };

@@ -1,51 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 
 import { layerFactory } from '~/utils/utils';
 
-import configFn from '~/configs/geojson-config';
+import useMap from '../map-context';
 
-import ShopData1986 from '~/data/shop_survey_1986.js';
-import ShopData2015 from '~/data/shop_survey_2015.js';
+import configs from '~/configs';
 
-const useDataSets = () => {
+const useDataSets = ({ selectedMetadata }) => {
+  const { updateViewState } = useMap();
+
   // TODO: type properly
   const [layers, setLayers] = useState<unknown[]>([]);
-  const [layerVisibility, setLayerVisibility] = useState({
-    '1986': true,
-    '2015': false,
-  });
-
-  console.log('layerVisibility: ', layerVisibility);
+  const [sidebarComponents, setSidebarComponents] = useState<ReactNode[]>([]);
 
   useEffect(() => {
-    const classDefinition = 'GeoJsonLayer';
+    if (!selectedMetadata) return;
 
-    const config1986 = configFn({
-        id: 'geojson-layer',
-        data: ShopData1986,
-        visible: layerVisibility['1986'],
-        color: 'red',
-      }),
-      layer1986 = layerFactory({
-        classDefinition,
-        configuration: config1986,
-      });
+    console.log('HIT HHLKL: ', selectedMetadata);
+    const { data, layerId, configDefinition, classDefinition } =
+      selectedMetadata;
 
-    const config2015 = configFn({
-        id: 'geojson-layer',
-        data: ShopData2015,
-        visible: layerVisibility['2015'],
-        color: 'purple',
-      }),
-      layer2015 = layerFactory({
-        classDefinition,
-        configuration: config2015,
-      });
+    const configFactory = configs[configDefinition],
+      configuration = configFactory({ id: layerId, data, updateViewState });
 
-    setLayers(() => [layer1986, layer2015]);
-  }, [layerVisibility]);
+    const layerInstance = layerFactory({
+      classDefinition,
+      configuration,
+    });
 
-  return { layers, setLayerVisibility };
+    setLayers((prev) => [...prev, layerInstance]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMetadata]);
+
+  // useEffect(() => {
+  //   const Component = <SidebarList data={ListedBuildings} />;
+  //   setSidebarComponents([Component]);
+  // }, []);
+
+  return { layers, sidebarComponents };
 };
 
 export default useDataSets;

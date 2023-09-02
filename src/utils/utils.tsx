@@ -1,9 +1,11 @@
 import { GeoJsonLayer } from '@deck.gl/layers/typed';
+import ClusteredGeoJsonLayer from '../custom-layers/clustered-geojson-icon-layer';
 
 import { LayerName } from '~/types';
 
 const LAYER_CLASSES = {
   GeoJsonLayer,
+  ClusteredGeoJsonLayer,
 };
 
 interface LayerFactoryArgs {

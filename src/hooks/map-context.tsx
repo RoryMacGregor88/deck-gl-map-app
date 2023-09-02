@@ -6,12 +6,16 @@ import {
   ReactNode,
 } from 'react';
 
+import { FlyToInterpolator } from '@deck.gl/core/typed';
+
 const INITIAL_VIEW_STATE = {
-  zoom: 6,
-  longitude: -4.84,
-  latitude: 54.71,
+  zoom: 8,
+  longitude: -3.29,
+  latitude: 55.94,
   pitch: 0,
   bearing: 0,
+  transitionDuration: 1000,
+  transitionInterpolator: new FlyToInterpolator(),
 };
 
 const DEFAULT_MAP_STYLE = 'mapbox://styles/mapbox/dark-v9';
@@ -19,18 +23,22 @@ const DEFAULT_MAP_STYLE = 'mapbox://styles/mapbox/dark-v9';
 export const MapContext = createContext(undefined);
 MapContext.displayName = 'MapContext';
 
-interface ViewState {
+export interface ViewState {
   longitude: number;
   latitude: number;
   zoom: number;
   pitch: number;
   bearing: number;
+  transitionDuration: number;
+  transitionInterpolator: FlyToInterpolator;
 }
+
+export type UpdateViewState = (newViewState: Partial<ViewState>) => void;
 
 interface MapContextType {
   viewState: ViewState;
   setViewState: SetStateAction<ViewState>;
-  updateViewState: (newViewState: Partial<ViewState>) => void;
+  updateViewState: UpdateViewState;
   resetViewState: () => void;
   mapStyle: string;
   setMapStyle: SetStateAction<string>;
@@ -46,6 +54,14 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
       ...newViewState,
     }));
 
+  const handleDrag = ({ viewport }) => {
+    const { longitude, latitude } = viewport;
+    updateViewState({
+      longitude,
+      latitude,
+    });
+  };
+
   const resetViewState = () => setViewState(INITIAL_VIEW_STATE);
 
   const value = {
@@ -53,6 +69,7 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
     setViewState,
     updateViewState,
     resetViewState,
+    handleDrag,
     mapStyle,
     setMapStyle,
   };

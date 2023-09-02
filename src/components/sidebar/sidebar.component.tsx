@@ -7,7 +7,7 @@ const Button = ({ children, onClick }) => (
   </button>
 );
 
-const Sidebar = ({ setLayerVisibility }) => {
+const Sidebar = ({ setLayerVisibility, sidebarComponents }) => {
   const handleClick = (type: string) =>
     setLayerVisibility((prev) => ({ ...prev, [type]: !prev[type] }));
   return (
@@ -25,12 +25,16 @@ const Sidebar = ({ setLayerVisibility }) => {
         padding: '2rem',
       }}
     >
-      <div>
+      {/* <div>
         <h1 style={{ color: '#fff' }}>Shops 1986</h1>
         <Button onClick={() => handleClick('1986')}>View</Button>
       </div>
       <h1 style={{ color: '#fff' }}>Shops 2015</h1>
-      <Button onClick={() => handleClick('2015')}>View</Button>
+      <Button onClick={() => handleClick('2015')}>View</Button> */}
+
+      {sidebarComponents.map((Component) => {
+        return <div>{Component}</div>;
+      })}
     </div>
   );
 };

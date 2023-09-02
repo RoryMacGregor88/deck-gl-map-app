@@ -9,9 +9,14 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const Map = ({ layers }) => {
-  const { viewState, mapStyle } = useMap();
+  const { viewState, mapStyle, handleDrag } = useMap();
   return (
-    <DeckGL initialViewState={viewState} controller={true} layers={[layers]}>
+    <DeckGL
+      onDragEnd={handleDrag}
+      initialViewState={viewState}
+      controller={true}
+      layers={[layers]}
+    >
       <ReactMapGL mapboxAccessToken={MAPBOX_ACCESS_TOKEN} mapStyle={mapStyle} />
     </DeckGL>
   );
