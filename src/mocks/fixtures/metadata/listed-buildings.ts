@@ -1,5 +1,3 @@
-import ListedBuildings from '~/data/listed_buildings';
-
 /**
  * This is the metadat surrounding the Listed Buildings in Edinburgh
  * dataset. It includes contextual information, definitions of layer
@@ -7,16 +5,22 @@ import ListedBuildings from '~/data/listed_buildings';
  */
 
 const ListedBuildingsMetadata = {
+  id: 'listed-buildings-edinburgh-geojson',
   name: 'Listed Buildings Edinburgh',
   description: `A GeoJson representation of listed building in the Edinburgh
-        and Lothian Area. The data was sourced from Open Data Scotland.`,
+        and Lothian Area. Data sourced from Open Data Scotland.`,
   source: 'Open Data Scotland',
-  url: 'https://opendata.scot/datasets/city+of+edinburgh+council-listed+buildings/',
-  layerId: 'listed-buildings-edinburgh-geojson',
-  data: ListedBuildings,
+  sourceUrl:
+    'https://opendata.scot/datasets/city+of+edinburgh+council-listed+buildings/',
+  dataUrl: '/api/data/listed_buildings_edinburgh',
   configDefinition: 'geoJsonConfig',
   classDefinition: 'ClusteredGeoJsonLayer',
-  sidebarComponents: ['card-list'],
+  sidebarComponents: ['CardList'],
+  mapProps: {
+    zoom: 11,
+    longitude: -3.29,
+    latitude: 55.94,
+  },
   componentProps: [
     'ENT_TITLE',
     'CREATED',

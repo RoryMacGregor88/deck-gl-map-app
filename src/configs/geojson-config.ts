@@ -1,25 +1,14 @@
-import { SetStateAction } from 'react';
+import { ConfigArgs } from '~/types';
 import iconAtlas from './geojson-icon-atlas.svg';
 import iconMapping from './geojson-icon-mapping.json';
-import useMap, { UpdateViewState, ViewState } from '~/hooks/map-context';
 
-type GeoJson = {
-  type: string;
-  features: { [key: string]: unknown }[];
-};
-
-interface ConfigArgs {
-  id: string;
-  data: GeoJson;
-  visible: boolean;
-  color: string;
-  updateViewstate: UpdateViewState;
-}
-
-const geoJsonConfig = ({ id, data, updateViewstate }: ConfigArgs) => {
+const geoJsonConfig = ({ id, data, updateViewState }: ConfigArgs) => {
   const onClick = (info) => console.log('ICON: ', info.object.properties);
-  const getIcon = () => `pin-${color}`;
-  const onClusterClick = (zoom) => updateViewstate({ zoom });
+
+  const getIcon = () => 'pin-red';
+
+  const onClusterClick = (zoom: number) => updateViewState({ zoom });
+
   return {
     id,
     data: data.features,

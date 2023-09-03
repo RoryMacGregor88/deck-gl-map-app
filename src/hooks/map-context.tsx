@@ -1,12 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  SetStateAction,
-  ReactNode,
-} from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 import { FlyToInterpolator } from '@deck.gl/core/typed';
+import { MapContextType, ViewState } from '~/types';
 
 const INITIAL_VIEW_STATE = {
   zoom: 8,
@@ -22,27 +17,6 @@ const DEFAULT_MAP_STYLE = 'mapbox://styles/mapbox/dark-v9';
 
 export const MapContext = createContext(undefined);
 MapContext.displayName = 'MapContext';
-
-export interface ViewState {
-  longitude: number;
-  latitude: number;
-  zoom: number;
-  pitch: number;
-  bearing: number;
-  transitionDuration: number;
-  transitionInterpolator: FlyToInterpolator;
-}
-
-export type UpdateViewState = (newViewState: Partial<ViewState>) => void;
-
-interface MapContextType {
-  viewState: ViewState;
-  setViewState: SetStateAction<ViewState>;
-  updateViewState: UpdateViewState;
-  resetViewState: () => void;
-  mapStyle: string;
-  setMapStyle: SetStateAction<string>;
-}
 
 export const MapProvider = ({ children }: { children: ReactNode }) => {
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);

@@ -1,3 +1,66 @@
+import { CompositeLayer, FlyToInterpolator } from '@deck.gl/core/typed';
+import { GeoJsonLayer } from '@deck.gl/layers/typed';
+import { ReactNode, SetStateAction } from 'react';
+
 export type LayerName = 'GeoJsonLayer' | 'ClusteredGeoJsonLayer';
 
-export type Metadata = { [key: string]: unknown };
+export type Layer = GeoJsonLayer | CompositeLayer;
+
+export type Metadata = {
+  id: string;
+  name: string;
+  description: string;
+  source: string;
+  sourceUrl: string;
+  dataUrl: string;
+  configDefinition: string;
+  classDefinition: LayerName;
+  sidebarComponents: string[];
+  componentProps: string[];
+  mapProps: {
+    zoom: number;
+    longitude: [number, number];
+    latitude: [number, number];
+  };
+};
+
+export type GeoJson = {
+  type: string;
+  features: {
+    [key: string]: {
+      properties: { [key: string]: unknown };
+      geometry: [number, number];
+    };
+  }[];
+};
+
+export interface ConfigArgs {
+  id: string;
+  data: GeoJson;
+  updateViewState: UpdateViewState;
+}
+
+export type ConfigFactory = (args: ConfigArgs) => { [key: string]: unknown };
+
+export interface ViewState {
+  longitude: number;
+  latitude: number;
+  zoom: number;
+  pitch: number;
+  bearing: number;
+  transitionDuration: number;
+  transitionInterpolator: FlyToInterpolator;
+}
+
+export type UpdateViewState = (newViewState: Partial<ViewState>) => void;
+
+export interface MapContextType {
+  viewState: ViewState;
+  setViewState: SetStateAction<ViewState>;
+  updateViewState: UpdateViewState;
+  resetViewState: () => void;
+  mapStyle: string;
+  setMapStyle: SetStateAction<string>;
+}
+
+export type SidebarComponent = ReactNode;

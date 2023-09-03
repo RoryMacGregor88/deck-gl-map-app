@@ -1,1 +1,11 @@
 pointer cursor for points
+
+styling
+
+types
+
+paginated cardList
+
+click works both ways like in safers
+
+highlight cluster like in safers

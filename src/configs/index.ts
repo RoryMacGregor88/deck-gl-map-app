@@ -1,3 +1,6 @@
+import { ConfigFactory } from '~/types';
 import geoJsonConfig from './geojson-config';
 
-export default { geoJsonConfig };
+const configs: { [key: string]: ConfigFactory } = { geoJsonConfig };
+
+export default configs;
