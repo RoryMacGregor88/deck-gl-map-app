@@ -22,6 +22,7 @@ const ListedBuildingsMetadata = {
     latitude: 55.94,
   },
   componentProps: [
+    'OBJECTID',
     'ENT_TITLE',
     'CREATED',
     'COMPILER',

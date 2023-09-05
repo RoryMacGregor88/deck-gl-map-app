@@ -12,7 +12,7 @@ const Map = ({ layers }) => {
   const { viewState, mapStyle, handleDrag } = useMap();
   return (
     <DeckGL
-      onDragEnd={handleDrag}
+      // onDragEnd={handleDrag}
       initialViewState={viewState}
       controller={true}
       layers={[layers]}

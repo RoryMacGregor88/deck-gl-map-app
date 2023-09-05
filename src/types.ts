@@ -24,14 +24,14 @@ export type Metadata = {
   };
 };
 
+export type Feature = {
+  properties: { [key: string]: unknown };
+  geometry: { coordinates: [number, number] };
+};
+
 export type GeoJson = {
   type: string;
-  features: {
-    [key: string]: {
-      properties: { [key: string]: unknown };
-      geometry: [number, number];
-    };
-  }[];
+  features: Feature[];
 };
 
 export interface ConfigArgs {

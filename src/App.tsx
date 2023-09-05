@@ -32,20 +32,14 @@ const App = () => {
   const hasSidebarComponents = !!sidebarComponents.length;
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        height: '100vh',
-        width: '100vw',
-      }}
-    >
-      {hasSidebarComponents ? (
-        <Sidebar sidebarComponents={sidebarComponents} />
-      ) : null}
+    <div className='relative h-screen w-100'>
       <DatasetSelection
         metadataList={metadataList}
         handleLayerClick={handleLayerClick}
       />
+      {hasSidebarComponents ? (
+        <Sidebar sidebarComponents={sidebarComponents} />
+      ) : null}
       <Map layers={layers} />
     </div>
   );

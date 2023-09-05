@@ -1,9 +1,18 @@
 import { CompositeLayer } from '@deck.gl/core/typed';
 import { IconLayer, TextLayer } from '@deck.gl/layers/typed';
 import Supercluster from 'supercluster';
+import { Feature } from '~/types';
 
 const DEFAULT_CLUSTER_MAX_ZOOM = 16;
-const DEFAULT_CLUSTER_RADIUS = 40;
+const DEFAULT_CLUSTER_RADIUS = 30;
+const DEFAULT_CLUSTER_ICON_NAME = 'cluster';
+
+// TODO: change these
+const COLOR_TRANSPARENT = [0, 0, 0, 0],
+  COLOR_PRIMARY = [246, 190, 0, 255],
+  COLOR_SECONDARY = [51, 63, 72, 255];
+
+const SELECTED_CLUSTER_COLOR = [226, 123, 29];
 
 interface ShouldUpdateStateArgs {
   changeFlags: {
@@ -27,19 +36,19 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
   }
 
   updateState({ props, oldProps, changeFlags }) {
-    const { maxZoom, clusterRadius } = this.props;
+    const { maxZoom, radius } = this.props;
 
     const shouldRebuildSpatialIndex =
       changeFlags.dataChanged || props.sizeScale !== oldProps.sizeScale;
 
     if (shouldRebuildSpatialIndex) {
       const spatialIndex = new Supercluster({
-        maxZoom: maxZoom ?? DEFAULT_CLUSTER_MAX_ZOOM,
-        radius: clusterRadius ?? DEFAULT_CLUSTER_RADIUS,
+        maxZoom,
+        radius,
       });
       spatialIndex.load(
         props.data.map((datum) => ({
-          geometry: { coordinates: this.props.getPosition(datum) },
+          geometry: { coordinates: this._getPosition(datum) },
           properties: datum.properties,
         }))
       );
@@ -58,23 +67,67 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
     }
   }
 
-  _getClusterText(feature) {
-    return feature.properties.cluster
-      ? `${feature.properties.point_count}`
-      : ` `;
+  _getPinColor(feature: Feature) {
+    if (
+      feature.properties.cluster &&
+      this._getExpansionZoom(feature) <= this.props.maxZoom
+    ) {
+      /** Get the points within the cluster */
+      const leaves = this.state.spatialIndex.getLeaves(
+        feature.properties.cluster_id,
+        'Infinity'
+      );
+
+      const id = this.props.featureIdAccessor;
+
+      /** Check if the selected item is part of this clustered feature */
+      if (this.props.selectedFeature[id]) {
+        const isMatch = leaves.find(
+          (leaf) => leaf.properties[id] === this.props.selectedFeature[id]
+        );
+        if (isMatch) {
+          return SELECTED_CLUSTER_COLOR;
+        }
+      }
+
+      return COLOR_PRIMARY;
+    }
+    if (typeof this.props.getPinColor === 'function') {
+      return this.props.getPinColor(feature);
+    }
+    if (Array.isArray(this.props.pinColor)) {
+      return this.props.pinColor;
+    }
+
+    if (this.props.selectedFeature) {
+      const id = this.props.featureIdAccessor;
+
+      const isSelected =
+        this.props.selectedFeature.properties?.[id] === feature.properties[id];
+
+      return isSelected ? [255, 99, 71, 255] : [15, 10, 222, 255];
+    }
+    // TODO: what is this color? Default color?
+    return [15, 10, 222, 255];
   }
 
-  _getIcon(feat) {
-    if (feat.properties.cluster) {
+  _getClusterText(feature: Feature) {
+    const { cluster, point_count } = feature.properties;
+    return cluster ? `${point_count}` : ` `;
+  }
+
+  _getIcon(feature: Feature) {
+    if (feature.properties.cluster) {
       // TODO: this was different, involved group icon and _getExpansionZoom
       return this.props.clusterIconName;
     }
     // TODO: this was a ternary before
-    return this.props.getIcon(feat.object);
+    // if (this.props.getIcon) return this.props.getIcon(feature);
+    return 'pin';
   }
 
-  _getIconSize(feat) {
-    if (feat.properties.cluster) {
+  _getIconSize(feature: Feature) {
+    if (feature.properties.cluster) {
       // TODO: this was different, involved group icon and _getExpansionZoom
       return this.props.clusterIconSize;
     }
@@ -82,36 +135,42 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
     return this.props.getIconSize;
   }
 
-  _getExpansionZoom(feat) {
+  _getExpansionZoom(feature: Feature) {
     return this.state.spatialIndex.getClusterExpansionZoom(
-      feat.object.properties.cluster_id
+      feature.properties.cluster_id
     );
   }
 
-  onClick(feat) {
-    if (feat.object.properties.cluster) {
-      const expansionZoom = this._getExpansionZoom(feat);
-      return this.props.onClusterClick(expansionZoom);
+  _onClick(feature: Feature) {
+    console.log('CLICKED: ', feature);
+    if (feature.properties.cluster) {
+      const expansionZoom = this._getExpansionZoom(feature);
+      this.props.onClusterClick(expansionZoom);
     } else {
-      return this.props.onClick(feat);
+      this.props.onFeatureClick(feature);
     }
+  }
+
+  _getPosition(feature: Feature) {
+    return feature.geometry.coordinates;
   }
 
   renderLayers() {
     const { data } = this.state;
-    const { iconAtlas, iconMapping, getPosition, updateTriggers } = this.props;
+    const { iconAtlas, iconMapping, iconSize, updateTriggers } = this.props;
 
-    /** Background icon for cluster */
+    /** Background icon for cluster/single pin */
     const iconLayer = new IconLayer(
       this.getSubLayerProps({
-        id: 'icon',
+        id: 'icon-layer',
         data,
         iconAtlas,
         iconMapping,
-        getPosition,
-        // TODO: try refactoring these
-        getIcon: (feat) => this._getIcon(feat),
-        getSize: (feat) => this._getIconSize(feat),
+        getPosition: (feature: Feature) => this._getPosition(feature),
+        getIcon: (feature: Feature) => this._getIcon(feature),
+        getSize: (feature: Feature) => this._getIconSize(feature),
+        getColor: (feature: Feature) => this._getPinColor(feature),
+        onClick: (feature: Feature) => this._onClick(feature),
         updateTriggers: {
           getPosition: updateTriggers.getPosition,
           getIcon: updateTriggers.getIcon,
@@ -124,12 +183,11 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
     /** Number showing amount of leaves in cluster */
     const textLayer = new TextLayer(
       this.getSubLayerProps({
-        id: 'text',
+        id: 'text-layer',
         data,
-        getPosition,
+        getPosition: (feature: Feature) => this._getPosition(feature),
         getText: this._getClusterText,
-        getSize: () => 10,
-        onClick: (f) => this.onClick(f),
+        getSize: () => iconSize,
         updateTriggers: {
           getPosition: updateTriggers.getPosition,
           getText: updateTriggers.getText,
@@ -144,5 +202,18 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
 }
 
 ClusteredGeoJsonIconLayer.layerName = 'ClusteredGeoJsonIconLayer';
+
+ClusteredGeoJsonIconLayer.defaultProps = {
+  pickable: true,
+  fontFamily: 'Open Sans',
+  fontWeight: 600,
+  clusterIconName: DEFAULT_CLUSTER_ICON_NAME,
+  maxZoom: DEFAULT_CLUSTER_MAX_ZOOM,
+  radius: DEFAULT_CLUSTER_RADIUS,
+  iconSize: 20,
+  iconSizeScale: 4,
+  clusterIconSize: 30,
+  hideTextOnGroup: true,
+};
 
 export default ClusteredGeoJsonIconLayer;

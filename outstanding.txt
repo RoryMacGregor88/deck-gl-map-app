@@ -6,6 +6,12 @@ types
 
 paginated cardList
 
-click works both ways like in safers
+Scenarios:
 
-highlight cluster like in safers
+Change pin color remotely
+
+Change pin color on click
+
+don't change pin color but zoom in
+
+don't change pin color but fire onclick

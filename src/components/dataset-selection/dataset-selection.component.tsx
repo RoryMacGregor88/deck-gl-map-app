@@ -20,7 +20,7 @@ const DatasetSelection = ({ metadataList, handleLayerClick }: Props) => {
             <h2>{name}</h2>
             <p>{description}</p>
             <div className='flex gap-2'>
-              <a href={sourceUrl}>
+              <a href={sourceUrl} target='_blank'>
                 <Button>Visit Source</Button>
               </a>
               <Button onClick={onClick}>Load Dataset</Button>

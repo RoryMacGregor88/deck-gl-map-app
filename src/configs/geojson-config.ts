@@ -1,29 +1,30 @@
-import { ConfigArgs } from '~/types';
-import iconAtlas from './geojson-icon-atlas.svg';
-import iconMapping from './geojson-icon-mapping.json';
+import { ConfigArgs, Feature } from '~/types';
+// import iconAtlas from './geojson-icon-atlas.svg';
+// import iconMapping from './geojson-icon-mapping.json';
+import iconAtlas from './safers-pins.svg';
+import iconMapping from './safers-pins.json';
 
-const geoJsonConfig = ({ id, data, updateViewState }: ConfigArgs) => {
-  const onClick = (info) => console.log('ICON: ', info.object.properties);
+const geoJsonConfig = ({
+  id,
+  data,
+  updateViewState,
+  selectedFeature,
+  setSelectedFeature,
+}: ConfigArgs) => {
+  const onFeatureClick = (feature: Feature) => setSelectedFeature(feature);
 
-  const getIcon = () => 'pin-red';
-
+  /** Must be outside because calls react state setter */
   const onClusterClick = (zoom: number) => updateViewState({ zoom });
 
   return {
     id,
     data: data.features,
-    onClick,
+    featureIdAccessor: 'OBJECTID',
+    selectedFeature: selectedFeature ?? {},
+    onFeatureClick,
     onClusterClick,
     iconAtlas,
     iconMapping,
-    getIcon,
-    getPosition: (feat) => feat.geometry.coordinates,
-    getIconSize: 30,
-    iconSizeScale: 4,
-    clusterIconName: 'cluster',
-    clusterIconSize: 30,
-    pickable: true,
-    visible: true,
   };
 };
 
