@@ -1,9 +1,6 @@
 import { useState, useEffect, FC } from 'react';
 
 import { layerFactory } from '~/utils/utils';
-
-import useMap from '../map-context';
-
 import configs from '~/configs';
 import { Feature, GeoJson, Layer, Metadata, SidebarComponent } from '~/types';
 import { CardList } from '~/components';
@@ -16,15 +13,16 @@ interface Props {
   selectedMetadata: Metadata | null;
 }
 
-const useVisualisations = ({ selectedMetadata }: Props) => {
-  const { updateViewState } = useMap();
-
+const useVisualisations = ({
+  selectedMetadata,
+  updateViewState,
+  selectedFeature,
+  setSelectedFeature,
+}: Props) => {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [sidebarComponents, setSidebarComponents] = useState<
     SidebarComponent[]
   >([]);
-
-  const [selectedFeature, setSelectedFeature] = useState<Feature | null>(null);
 
   useEffect(() => {
     if (!selectedFeature) return;
@@ -57,7 +55,9 @@ const useVisualisations = ({ selectedMetadata }: Props) => {
       const res = await fetch(dataUrl);
 
       if (!res.ok) {
-        // handle error
+        console.error(
+          'An error occurred while fetching data from useVisualisations'
+        );
       }
 
       const data: GeoJson = await res.json();

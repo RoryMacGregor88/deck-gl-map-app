@@ -22,13 +22,17 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
   const [mapStyle, setMapStyle] = useState(DEFAULT_MAP_STYLE);
 
-  const updateViewState = (newViewState: ViewState) =>
+  const updateViewState = (newViewState: Partial<ViewState>) =>
     setViewState((currentViewState) => ({
       ...currentViewState,
       ...newViewState,
     }));
 
-  const handleDrag = ({ viewport }) => {
+  interface HandleDragArgs {
+    viewport: { longitude: number; latitude: number };
+  }
+
+  const handleDrag = ({ viewport }: HandleDragArgs) => {
     const { longitude, latitude } = viewport;
     updateViewState({
       longitude,

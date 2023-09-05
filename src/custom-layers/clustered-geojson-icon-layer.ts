@@ -1,10 +1,10 @@
-import { CompositeLayer } from '@deck.gl/core/typed';
+import { CompositeLayer, PickingInfo } from '@deck.gl/core/typed';
 import { IconLayer, TextLayer } from '@deck.gl/layers/typed';
 import Supercluster from 'supercluster';
 import { Feature } from '~/types';
 
 const DEFAULT_CLUSTER_MAX_ZOOM = 16;
-const DEFAULT_CLUSTER_RADIUS = 30;
+const DEFAULT_CLUSTER_RADIUS = 40;
 const DEFAULT_CLUSTER_ICON_NAME = 'cluster';
 
 // TODO: change these
@@ -122,8 +122,7 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
       return this.props.clusterIconName;
     }
     // TODO: this was a ternary before
-    // if (this.props.getIcon) return this.props.getIcon(feature);
-    return 'pin';
+    return this.props.getIcon(feature);
   }
 
   _getIconSize(feature: Feature) {
@@ -132,7 +131,7 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
       return this.props.clusterIconSize;
     }
     // TODO: this was a ternary before
-    return this.props.getIconSize;
+    return this.props.pinIconSize;
   }
 
   _getExpansionZoom(feature: Feature) {
@@ -141,13 +140,13 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
     );
   }
 
-  _onClick(feature: Feature) {
-    console.log('CLICKED: ', feature);
+  onClick(info: PickingInfo) {
+    const feature: Feature = info.object;
     if (feature.properties.cluster) {
       const expansionZoom = this._getExpansionZoom(feature);
-      this.props.onClusterClick(expansionZoom);
+      return this.props.onClusterClick(expansionZoom);
     } else {
-      this.props.onFeatureClick(feature);
+      return this.props.onFeatureClick(feature);
     }
   }
 
@@ -157,7 +156,7 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
 
   renderLayers() {
     const { data } = this.state;
-    const { iconAtlas, iconMapping, iconSize, updateTriggers } = this.props;
+    const { iconAtlas, iconMapping, textIconSize, updateTriggers } = this.props;
 
     /** Background icon for cluster/single pin */
     const iconLayer = new IconLayer(
@@ -170,7 +169,6 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
         getIcon: (feature: Feature) => this._getIcon(feature),
         getSize: (feature: Feature) => this._getIconSize(feature),
         getColor: (feature: Feature) => this._getPinColor(feature),
-        onClick: (feature: Feature) => this._onClick(feature),
         updateTriggers: {
           getPosition: updateTriggers.getPosition,
           getIcon: updateTriggers.getIcon,
@@ -187,7 +185,7 @@ class ClusteredGeoJsonIconLayer extends CompositeLayer {
         data,
         getPosition: (feature: Feature) => this._getPosition(feature),
         getText: this._getClusterText,
-        getSize: () => iconSize,
+        getSize: () => textIconSize,
         updateTriggers: {
           getPosition: updateTriggers.getPosition,
           getText: updateTriggers.getText,
@@ -210,9 +208,10 @@ ClusteredGeoJsonIconLayer.defaultProps = {
   clusterIconName: DEFAULT_CLUSTER_ICON_NAME,
   maxZoom: DEFAULT_CLUSTER_MAX_ZOOM,
   radius: DEFAULT_CLUSTER_RADIUS,
-  iconSize: 20,
-  iconSizeScale: 4,
-  clusterIconSize: 30,
+  textIconSize: 15,
+  pinIconSize: 40,
+  iconSizeScale: 8,
+  clusterIconSize: 40,
   hideTextOnGroup: true,
 };
 
